@@ -905,6 +905,114 @@ def admin_gmail_action(action, task_id):
         flash("❌ কাজ রিজেক্ট করা হয়েছে। এটি আবার অন্য ইউজার করতে পারবে।", "warning")
 
     return redirect(url_for('admin_gmails'))
+
+# ==========================================
+# 👑 LEADERSHIP PROGRAM SYSTEM
+# ==========================================
+
+# --- 1. Security Decorator for Leader Dashboard ---
+def leader_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not g.user or not g.user.get('is_leader'):
+            flash("⛔ এই পেজটি শুধুমাত্র অ্যাপ্রুভড লিডারদের জন্য!", "error")
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# --- 2. Leadership Application Form ---
+@app.route('/apply-leader', methods=['GET', 'POST'])
+@login_required
+def apply_leader():
+    # চেক করুন অলরেডি লিডার কি না
+    if g.user.get('is_leader'):
+        return redirect(url_for('leader_panel'))
+        
+    # চেক করুন পেন্ডিং রিকোয়েস্ট আছে কি না
+    existing = supabase.table('leader_applications').select('*').eq('user_id', session['user_id']).eq('status', 'pending').execute().data
+    if existing:
+        flash("⚠️ আপনার অ্যাপ্লিকেশন রিভিউতে আছে। অনুগ্রহ করে অপেক্ষা করুন।", "warning")
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        try:
+            supabase.table('leader_applications').insert({
+                'user_id': session['user_id'],
+                'name': request.form.get('name'),
+                'email': request.form.get('email'),
+                'phone': request.form.get('phone'),
+                'telegram': request.form.get('telegram'),
+                'education': request.form.get('education'),
+                'age': request.form.get('age'),
+                'address': request.form.get('address'),
+                'marketing_exp': request.form.get('marketing_exp'),
+                'fb_link': request.form.get('fb_link')
+            }).execute()
+            
+            flash("✅ অ্যাপ্লিকেশন সফলভাবে জমা হয়েছে! এডমিন আপনার সাথে যোগাযোগ করবে।", "success")
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash("❌ সাবমিট করতে সমস্যা হয়েছে।", "error")
+
+    return render_template('apply_leader.html', user=g.user)
+
+
+# --- 3. Exclusive Leader Dashboard ---
+@app.route('/leader-panel')
+@login_required
+@leader_required
+def leader_panel():
+    # লিডারদের রেফারেল ডাটা আনা
+    try:
+        refs = supabase.table('profiles').select('id, is_active, current_level, created_at').eq('referred_by', session['user_id']).execute().data
+        total_refs = len(refs)
+        active_refs = sum(1 for r in refs if r.get('is_active') or r.get('current_level', 0) > 0)
+    except:
+        total_refs = 0
+        active_refs = 0
+
+    return render_template('leader_dashboard.html', user=g.user, total_refs=total_refs, active_refs=active_refs)
+
+
+# --- 4. Leader Balance Withdraw Route ---
+@app.route('/withdraw-leader', methods=['POST'])
+@login_required
+@leader_required
+def withdraw_leader():
+    amount = float(request.form.get('amount', 0))
+    current_bal = float(g.user.get('leader_balance', 0))
+    
+    if amount < 100:
+        flash("❌ লিডার ব্যালেন্স থেকে সর্বনিম্ন উইথড্র ১০০ টাকা।", "error")
+        return redirect(url_for('leader_panel'))
+        
+    if amount > current_bal:
+        flash("❌ লিডার ব্যালেন্সে পর্যাপ্ত টাকা নেই।", "error")
+        return redirect(url_for('leader_panel'))
+        
+    try:
+        # টাকা কাটা
+        new_bal = current_bal - amount
+        supabase.table('profiles').update({'leader_balance': new_bal}).eq('id', session['user_id']).execute()
+        
+        # উইথড্র রিকোয়েস্ট সেভ (wallet_type = leader)
+        supabase.table('withdrawals').insert({
+            'user_id': session['user_id'],
+            'method': g.user.get('wallet_method'),
+            'number': g.user.get('wallet_number'),
+            'amount': amount,
+            'wallet_type': 'leader',
+            'status': 'pending'
+        }).execute()
+        
+        flash("✅ লিডার ব্যালেন্স থেকে উইথড্র সফল!", "success")
+    except Exception as e:
+        flash("❌ Error processing withdraw.", "error")
+        
+    return redirect(url_for('leader_panel'))
+    
+    
     # --- ADMIN: DANGER ZONE (FACTORY RESET / MASS WIPE) ---
 @app.route('/admin/danger-zone', methods=['GET', 'POST'])
 @login_required
