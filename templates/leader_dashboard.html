@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto space-y-6 pb-10 pt-4 px-1">
+    
+    <!-- Leader Header -->
+    <div class="bg-gradient-to-r from-purple-700 to-indigo-800 rounded-[32px] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="absolute right-0 top-0 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+        <div class="relative z-10 flex items-center gap-4">
+            <div class="h-16 w-16 bg-white text-purple-600 rounded-2xl flex items-center justify-center text-3xl font-black shadow-lg">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+                <span class="bg-purple-900/50 text-purple-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mb-2 inline-block">Official Leader</span>
+                <h1 class="text-2xl font-black leading-tight">{{ user.full_name or 'Leader' }}</h1>
+                <p class="text-xs text-purple-200 mt-1 font-mono">UID: {{ user.referral_code }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leader Balance & Withdraw -->
+    <div class="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Leader Wallet</p>
+            <h2 class="text-4xl font-black text-purple-600 font-mono">৳{{ user.leader_balance or 0 }}</h2>
+            <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-circle-info text-blue-500"></i> Min withdraw: 100 ৳ (50% Commissions Add Here)</p>
+        </div>
+        
+        <form method="POST" action="/withdraw-leader" class="w-full md:w-auto flex gap-2">
+            <input type="number" name="amount" required placeholder="Amount" class="bg-slate-50 border border-slate-200 p-3 rounded-xl w-32 font-bold focus:outline-purple-500">
+            <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-purple-700 transition">Withdraw</button>
+        </form>
+    </div>
+
+    <!-- Target & Team Stats -->
+    <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Recruits</p>
+                <h3 class="text-2xl font-black text-slate-800">{{ total_refs }} Users</h3>
+            </div>
+            <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Active / Target</p>
+                <h3 class="text-2xl font-black text-emerald-600">{{ active_refs }} <span class="text-sm text-slate-400">/ 50</span></h3>
+            </div>
+            <div class="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-bullseye"></i></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
