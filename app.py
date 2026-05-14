@@ -1273,6 +1273,52 @@ def special_task():
     return render_template('special_task.html', task=SPECIAL_TASK_INFO, user=g.user)
 # --- SPECIAL VIDEO PAGE (/st) ---
 
+
+# ==========================================
+# ADMIN: LEADERSHIP APPLICATIONS
+# ==========================================
+@app.route('/admin/leaders')
+@login_required
+@admin_required
+def admin_leaders():
+    # Fetch all pending leadership applications
+    reqs = supabase.table('leader_applications').select('*').eq('status', 'pending').order('created_at', desc=True).execute().data
+    return render_template('admin_leaders.html', requests=reqs)
+
+@app.route('/admin/leaders/action/<action>/<int:req_id>')
+@login_required
+@admin_required
+def leader_action(action, req_id):
+    try:
+        req_data = supabase.table('leader_applications').select('*').eq('id', req_id).single().execute().data
+        
+        if not req_data:
+            flash("❌ অ্যাপ্লিকেশন পাওয়া যায়নি!", "error")
+            return redirect(url_for('admin_leaders'))
+
+        user_id = req_data['user_id']
+
+        if action == 'approve':
+            # 1. Update user profile to make them a leader
+            supabase.table('profiles').update({'is_leader': True}).eq('id', user_id).execute()
+            
+            # 2. Mark application as approved
+            supabase.table('leader_applications').update({'status': 'approved'}).eq('id', req_id).execute()
+            
+            # 3. Send Telegram Alert to Admin (Optional logging)
+            flash(f"✅ {req_data['name']} কে সফলভাবে লিডার হিসেবে অ্যাপ্রুভ করা হয়েছে!", "success")
+
+        elif action == 'reject':
+            # Mark application as rejected
+            supabase.table('leader_applications').update({'status': 'rejected'}).eq('id', req_id).execute()
+            flash("❌ অ্যাপ্লিকেশনটি রিজেক্ট করা হয়েছে।", "error")
+
+    except Exception as e:
+        print(f"Leader Action Error: {e}")
+        flash("❌ সিস্টেম এরর! আবার চেষ্টা করুন।", "error")
+
+    return redirect(url_for('admin_leaders'))
+    
 # --- ADMIN: VIP ACTION (APPROVE / REJECT) ---
 @app.route('/admin/vip/action/<action>/<int:req_id>')
 @login_required
