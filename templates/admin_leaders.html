@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+    .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(15px); }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="max-w-5xl mx-auto space-y-6 pt-4 pb-20 fade-in-up px-1">
+    
+    <!-- 1. Header -->
+    <div class="bg-gradient-to-r from-slate-900 to-[#1E293B] p-6 sm:p-8 rounded-[24px] text-white shadow-xl relative overflow-hidden">
+        <div class="absolute right-0 top-0 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+        <div class="relative z-10 flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-black mb-1 tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-user-tie text-indigo-400"></i> Leader Applications
+                </h2>
+                <p class="text-xs text-slate-400 font-medium">Review and approve new Brand Ambassadors</p>
+            </div>
+            <div class="bg-white/10 px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm text-center">
+                <p class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">Pending</p>
+                <p class="text-2xl font-black font-mono leading-none">{{ requests|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Application Cards -->
+    <div class="grid lg:grid-cols-2 gap-5">
+        {% for req in requests %}
+        <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 sm:p-6 relative overflow-hidden group hover:border-indigo-200 hover:shadow-[0_10px_30px_rgba(79,70,229,0.05)] transition-all flex flex-col h-full">
+            
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-[14px] flex items-center justify-center font-black text-xl shadow-sm border border-indigo-100">
+                        {{ req.name[0] | upper }}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg leading-tight">{{ req.name }}</h4>
+                        <p class="text-[10px] text-slate-400 font-mono mt-0.5"><i class="fa-regular fa-envelope"></i> {{ req.email }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-[9px] bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-widest inline-block mb-1">Pending</span>
+                    <p class="text-[9px] text-slate-400 font-mono">{{ req.created_at[:10] }}</p>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Phone</p>
+                    <p class="text-sm font-bold text-slate-700 font-mono">{{ req.phone }}</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Telegram</p>
+                    <p class="text-sm font-bold text-slate-700 font-mono">{{ req.telegram }}</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Age & Edu</p>
+                    <p class="text-xs font-bold text-slate-700">{{ req.age }} Yrs, {{ req.education }}</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Facebook</p>
+                    <a href="{{ req.fb_link }}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"><i class="fa-solid fa-up-right-from-square"></i> View Profile</a>
+                </div>
+            </div>
+
+            <!-- Marketing Plan -->
+            <div class="bg-indigo-50/50 p-4 rounded-[16px] border border-indigo-100 mb-5 flex-grow">
+                <p class="text-[9px] text-indigo-500 uppercase font-bold tracking-widest mb-2"><i class="fa-solid fa-bullseye"></i> Marketing Plan</p>
+                <p class="text-xs text-slate-700 font-medium leading-relaxed">
+                    {{ req.marketing_exp }}
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3 border-t border-slate-100 pt-4 mt-auto">
+                <a href="/admin/leaders/action/reject/{{ req.id }}" onclick="return confirm('অ্যাপ্লিকেশনটি রিজেক্ট করবেন?')" class="flex-1 bg-white border border-red-200 text-red-600 py-3 rounded-[14px] text-xs font-bold text-center hover:bg-red-50 hover:border-red-300 transition shadow-sm active:scale-95">
+                    <i class="fa-solid fa-xmark"></i> Reject
+                </a>
+                
+                <a href="/admin/leaders/action/approve/{{ req.id }}" onclick="return confirm('এই ইউজারকে লিডার হিসেবে অ্যাপ্রুভ করবেন?')" class="flex-1 bg-indigo-600 text-white py-3 rounded-[14px] text-xs font-black uppercase tracking-widest text-center shadow-[0_4px_15px_rgba(79,70,229,0.2)] hover:bg-indigo-700 transition active:scale-95">
+                    <i class="fa-solid fa-check-double"></i> Approve Leader
+                </a>
+            </div>
+
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="col-span-full text-center py-24 bg-white rounded-[32px] border border-dashed border-slate-300 shadow-sm">
+            <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-slate-300 border border-slate-100">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 tracking-tight">No Applications</h3>
+            <p class="text-xs text-slate-500 mt-1 font-medium">নতুন লিডারশিপ অ্যাপ্লিকেশনের জন্য অপেক্ষা করুন।</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}
