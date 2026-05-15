@@ -1,55 +1,180 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class="max-w-4xl mx-auto space-y-6 pb-10 pt-4 px-1">
+<style>
+    /* Entry Animations */
+    .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* Custom Gradient for Leader */
+    .leader-gradient { background: linear-gradient(135deg, #312E81 0%, #4338CA 100%); }
     
-    <!-- Leader Header -->
-    <div class="bg-gradient-to-r from-purple-700 to-indigo-800 rounded-[32px] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="absolute right-0 top-0 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+    /* Scrollbar for Team List */
+    .team-scroll::-webkit-scrollbar { width: 4px; }
+    .team-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+</style>
+
+<div class="max-w-5xl mx-auto space-y-6 pb-10 pt-4 px-1 fade-in-up">
+    
+    <!-- ==========================================
+         1. LEADER HERO & WALLET (Top Section)
+    ========================================== -->
+    <div class="leader-gradient rounded-[32px] p-6 sm:p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <!-- Abstract Decors -->
+        <div class="absolute right-0 top-0 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+        <i class="fa-solid fa-chess-king absolute left-10 top-1/2 transform -translate-y-1/2 text-9xl opacity-[0.03] pointer-events-none -rotate-12"></i>
+        
         <div class="relative z-10 flex items-center gap-4">
-            <div class="h-16 w-16 bg-white text-purple-600 rounded-2xl flex items-center justify-center text-3xl font-black shadow-lg">
+            <div class="h-16 w-16 bg-white text-indigo-700 rounded-2xl flex items-center justify-center text-3xl font-black shadow-lg border border-indigo-200">
                 <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-                <span class="bg-purple-900/50 text-purple-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mb-2 inline-block">Official Leader</span>
-                <h1 class="text-2xl font-black leading-tight">{{ user.full_name or 'Leader' }}</h1>
-                <p class="text-xs text-purple-200 mt-1 font-mono">UID: {{ user.referral_code }}</p>
+                <span class="bg-indigo-900/50 text-indigo-200 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-500/30 mb-2 inline-block shadow-sm">Official Ambassador</span>
+                <h1 class="text-2xl sm:text-3xl font-black leading-tight tracking-tight">{{ user.full_name or 'Leader' }}</h1>
+                <p class="text-xs text-indigo-200 mt-1 font-mono font-bold"><i class="fa-solid fa-fingerprint"></i> UID: {{ user.referral_code }}</p>
             </div>
+        </div>
+
+        <!-- Leader Wallet & Withdraw -->
+        <div class="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-[24px] w-full md:w-auto min-w-[280px]">
+            <p class="text-[9px] font-black uppercase tracking-widest text-indigo-200 mb-1">Available Commission</p>
+            <h2 class="text-3xl font-black font-mono tracking-tight mb-4">৳{{ user.leader_balance or 0 }}</h2>
+            
+            <form method="POST" action="/withdraw-leader" class="flex gap-2">
+                <input type="number" name="amount" required placeholder="Amount" class="bg-indigo-900/50 border border-indigo-500/30 p-3 rounded-xl w-full font-bold text-sm focus:outline-none focus:border-white text-white placeholder-indigo-300">
+                <button type="submit" class="bg-white text-indigo-800 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-md hover:bg-slate-50 transition active:scale-95">Withdraw</button>
+            </form>
+            <p class="text-[8px] text-indigo-200 mt-2 font-medium">Min withdraw: 100 ৳ (Instant Processing)</p>
         </div>
     </div>
 
-    <!-- Leader Balance & Withdraw -->
-    <div class="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Leader Wallet</p>
-            <h2 class="text-4xl font-black text-purple-600 font-mono">৳{{ user.leader_balance or 0 }}</h2>
-            <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-circle-info text-blue-500"></i> Min withdraw: 100 ৳ (50% Commissions Add Here)</p>
+    <!-- ==========================================
+         2. TARGET & PERFORMANCE STATS
+    ========================================== -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Target Active -->
+        <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-center relative overflow-hidden group">
+            <i class="fa-solid fa-bullseye absolute -right-2 -bottom-2 text-5xl text-emerald-500 opacity-5 group-hover:scale-110 transition"></i>
+            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Active Target</p>
+            <h3 class="text-2xl font-black text-emerald-600">{{ active_refs }} <span class="text-xs text-slate-400 font-bold">/ 50</span></h3>
+            <div class="w-full bg-slate-100 rounded-full h-1 mt-2"><div class="bg-emerald-500 h-full rounded-full" style="width: {{ (active_refs / 50) * 100 if active_refs < 50 else 100 }}%"></div></div>
         </div>
-        
-        <form method="POST" action="/withdraw-leader" class="w-full md:w-auto flex gap-2">
-            <input type="number" name="amount" required placeholder="Amount" class="bg-slate-50 border border-slate-200 p-3 rounded-xl w-32 font-bold focus:outline-purple-500">
-            <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-purple-700 transition">Withdraw</button>
-        </form>
+
+        <!-- Total Recruits -->
+        <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-center relative overflow-hidden group">
+            <i class="fa-solid fa-users absolute -right-2 -bottom-2 text-5xl text-blue-500 opacity-5 group-hover:scale-110 transition"></i>
+            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Team</p>
+            <h3 class="text-2xl font-black text-slate-800">{{ total_refs }}</h3>
+            <p class="text-[9px] text-slate-500 mt-1 font-bold">Total registered users</p>
+        </div>
+
+        <!-- Salary Status -->
+        <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-center sm:col-span-2 relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-2 bg-indigo-500"></div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">15-Days Salary</p>
+                    <h3 class="text-2xl font-black text-indigo-700 font-mono">৳7,000</h3>
+                </div>
+                {% if active_refs >= 50 %}
+                    <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1 shadow-sm"><i class="fa-solid fa-check"></i> Achieved</span>
+                {% else %}
+                    <span class="bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><i class="fa-solid fa-lock"></i> Locked</span>
+                {% endif %}
+            </div>
+            <p class="text-[9px] text-slate-500 mt-2 font-medium">৫০ জন অ্যাক্টিভ মেম্বার হলেই আপনার স্যালারি অটোমেটিক এডমিনের কাছে সাবমিট হবে।</p>
+        </div>
     </div>
 
-    <!-- Target & Team Stats -->
-    <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Recruits</p>
-                <h3 class="text-2xl font-black text-slate-800">{{ total_refs }} Users</h3>
-            </div>
-            <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
-        </div>
+    <!-- ==========================================
+         3. DETAILED TEAM LIST (CRM Style)
+    ========================================== -->
+    <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm p-1 overflow-hidden mt-6">
         
-        <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Active / Target</p>
-                <h3 class="text-2xl font-black text-emerald-600">{{ active_refs }} <span class="text-sm text-slate-400">/ 50</span></h3>
-            </div>
-            <div class="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-bullseye"></i></div>
+        <div class="p-5 sm:p-6 flex items-center justify-between border-b border-slate-50">
+            <h3 class="font-black text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-network-wired text-indigo-600"></i> My Recruits (CRM)
+            </h3>
+            <span class="text-[9px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-md font-bold uppercase tracking-widest border border-indigo-100">
+                Detailed Log
+            </span>
+        </div>
+
+        <div class="overflow-x-auto team-scroll max-h-[400px]">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest sticky top-0 z-10 shadow-sm">
+                    <tr>
+                        <th class="px-6 py-4 rounded-tl-2xl">Member Info</th>
+                        <th class="px-6 py-4">Contact</th>
+                        <th class="px-6 py-4 text-center">Status</th>
+                        <th class="px-6 py-4 text-right rounded-tr-2xl">Commission Earned</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for member in team_members %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        
+                        <!-- Name & Date -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-9 w-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs border border-slate-200">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-xs">{{ member.full_name or member.email.split('@')[0] }}</p>
+                                    <p class="text-[9px] text-slate-400 font-mono mt-0.5"><i class="fa-regular fa-calendar"></i> Join: {{ member.created_at[:10] }}</p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Contact (Phone & Email) -->
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-slate-700 font-mono text-xs">{{ member.mobile_number or 'Not provided' }}</p>
+                            <p class="text-[9px] text-slate-400 mt-0.5">{{ member.email }}</p>
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td class="px-6 py-4 text-center">
+                            {% if member.current_level > 0 %}
+                                <span class="bg-amber-50 text-amber-600 border border-amber-200 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest"><i class="fa-solid fa-crown mr-1"></i> VIP {{ member.current_level }}</span>
+                            {% elif member.is_active %}
+                                <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest"><i class="fa-solid fa-check mr-1"></i> Active</span>
+                            {% else %}
+                                <span class="bg-slate-100 text-slate-500 border border-slate-200 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">Unpaid</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Commission Earned (Dynamic Calculation) -->
+                        <td class="px-6 py-4 text-right">
+                            {% set commission = 0 %}
+                            {% if member.current_level > 0 %}
+                                {% set commission = 20 %} <!-- VIP base logic minimum -->
+                            {% elif member.is_active %}
+                                {% set commission = 20 %} <!-- 50% of 40tk activation -->
+                            {% endif %}
+
+                            {% if commission > 0 %}
+                                <span class="text-sm font-black text-emerald-500 font-mono bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">+৳{{ commission }}</span>
+                            {% else %}
+                                <span class="text-xs font-bold text-slate-300 font-mono">-</span>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center">
+                            <div class="h-14 w-14 bg-slate-50 rounded-[14px] flex items-center justify-center mx-auto mb-3 text-2xl text-slate-300 border border-slate-100"><i class="fa-solid fa-users-slash"></i></div>
+                            <h3 class="text-sm font-bold text-slate-700">No Team Members Yet</h3>
+                            <p class="text-[10px] text-slate-400 mt-1 font-medium">আপনার প্রোমোশনাল লিংক শেয়ার করে ইউজার যুক্ত করুন।</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
 </div>
+
 {% endblock %}
