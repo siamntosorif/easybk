@@ -378,14 +378,23 @@ def premium_tasks():
 # ==========================================
 # 🧩 CAPTCHA ENTRY SYSTEM (Daily 10)
 # ==========================================
+# ==========================================
+# 🧩 CAPTCHA ENTRY SYSTEM (Daily 10) - BUG FIXED
+# ==========================================
 @app.route('/captcha', methods=['GET', 'POST'])
 @login_required
 def captcha_page():
     from datetime import datetime
+    import string, random
+    
     today_date = str(datetime.utcnow().date())
     
     # 1. Fetch user status
-    user_data = supabase.table('profiles').select('captcha_count, last_captcha_date, balance').eq('id', session['user_id']).single().execute().data
+    try:
+        user_data = supabase.table('profiles').select('captcha_count, last_captcha_date, balance').eq('id', session['user_id']).single().execute().data
+    except Exception as e:
+        flash("ডাটা ফেচিং এ সমস্যা হয়েছে।", "error")
+        return redirect(url_for('dashboard'))
     
     # Reset if new day
     if user_data.get('last_captcha_date') != today_date:
@@ -398,10 +407,12 @@ def captcha_page():
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
-        user_input = request.form.get('captcha_input', '').strip()
-        correct_captcha = session.get('current_captcha', '')
+        # ইউজার ইনপুট এবং সার্ভারের ডাটা দুটোই uppercase করে মেলানো হচ্ছে
+        user_input = request.form.get('captcha_input', '').strip().upper()
+        correct_captcha = session.get('current_captcha', '').strip().upper()
 
-        if user_input.upper() == correct_captcha.upper():
+        # ফাঁকা সাবমিট ঠেকানোর জন্য কন্ডিশন
+        if user_input and correct_captcha and user_input == correct_captcha:
             # Success! Add 1 Taka
             new_bal = float(user_data['balance']) + 1.00
             new_count = user_data['captcha_count'] + 1
@@ -412,20 +423,29 @@ def captcha_page():
                 'last_captcha_date': today_date
             }).eq('id', session['user_id']).execute()
             
+            # আগের ক্যাপচাটি ক্লিয়ার করে দেওয়া হলো
+            session.pop('current_captcha', None)
             flash("✅ ক্যাপচা সঠিক! ৳১ যোগ হয়েছে।", "success")
         else:
-            flash("❌ ক্যাপচা ভুল হয়েছে! আবার চেষ্টা করুন।", "error")
+            flash("❌ ক্যাপচা ভুল হয়েছে! সঠিক কোডটি দেখে টাইপ করুন।", "error")
             
         return redirect(url_for('captcha_page'))
 
     # Generate New Captcha (Mixed Letters and Numbers)
-    import string, random
     chars = string.ascii_uppercase + string.digits
     new_captcha = ''.join(random.choices(chars, k=6))
+    
+    # Session Update (Vercel Fix)
     session['current_captcha'] = new_captcha
+    session.modified = True 
 
-    return render_template('captcha.html', captcha_text=new_captcha, count=user_data['captcha_count'])
-
+    # Cache-Control (যাতে ব্রাউজার কখনোই পুরানো ক্যাপচা না দেখায়)
+    response = make_response(render_template('captcha.html', captcha_text=new_captcha, count=user_data['captcha_count']))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    
+    return response
+    
 
 # ==========================================
 # 🎟️ SCRATCH CARD SYSTEM (Daily 3)
