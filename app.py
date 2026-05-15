@@ -1172,34 +1172,43 @@ def admin_drive_manage():
 # ==========================================
 # 💼 B2B / CUSTOM WORK REQUEST SYSTEM
 # ==========================================
+# ==========================================
+# 💼 B2B / CUSTOM WORK REQUEST SYSTEM (HIRE US)
+# ==========================================
+
 @app.route('/hire-us', methods=['GET', 'POST'])
 def hire_us():
     if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        service = request.form.get('service')
-        details = request.form.get('details')
+        # ফর্ম থেকে ক্লায়েন্টের ডাটা সংগ্রহ
+        name = request.form.get('name', '').strip()
+        contact_method = request.form.get('contact_method', 'Unknown')
+        phone = request.form.get('phone', '').strip()  # এটি লিংক বা নাম্বার হতে পারে
+        service = request.form.get('service', 'Custom Request')
+        details = request.form.get('details', '').strip()
+
+        # কন্টাক্ট মেথড এবং নাম্বার/লিংক একসাথে জোড়া লাগিয়ে সেভ করা
+        formatted_contact = f"[{contact_method}] {phone}"
 
         try:
-            # 1. Save directly to Supabase Database (It will show in Admin Panel)
+            # সরাসরি Supabase ডাটাবেসে সেভ করা (Admin Inbox এ শো করার জন্য)
             supabase.table('client_requests').insert({
                 'name': name,
-                'phone': phone,
+                'phone': formatted_contact,  # "phone" কলামেই মেথড + নাম্বার সেভ হচ্ছে
                 'service_type': service,
                 'details': details,
                 'status': 'pending'
             }).execute()
             
-            # (টেলিগ্রামের কোড সম্পূর্ণ রিমুভ করা হয়েছে)
-            
-            flash("✅ আপনার প্রপোজালটি সফলভাবে জমা হয়েছে! অ্যাডমিন প্যানেল থেকে রিভিউ করে আপনার সাথে যোগাযোগ করা হবে।", "success")
+            flash("✅ আপনার প্রপোজালটি সফলভাবে জমা হয়েছে! অ্যাডমিন বা সাপোর্ট টিম খুব দ্রুত আপনার সাথে যোগাযোগ করবে।", "success")
         except Exception as e:
             print(f"Client Request Error: {e}")
             flash("❌ সার্ভার সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।", "error")
             
         return redirect(url_for('hire_us'))
 
-    # 16 Detailed Service Packages
+    # ==========================================
+    # 🌟 16 DETAILED SERVICE PACKAGES 
+    # ==========================================
     services = [
         {'icon': 'fa-youtube', 'color': 'text-red-500', 'bg': 'bg-red-50', 'title': 'YouTube Video Views', 'desc': 'অর্গানিক ওয়াচ টাইম এবং ১০০% রিয়েল ভিউ।'},
         {'icon': 'fa-youtube', 'color': 'text-red-600', 'bg': 'bg-red-100', 'title': 'YouTube Subscribers', 'desc': 'রিয়েল এবং এক্টিভ বাংলাদেশী সাবস্ক্রাইবার।'},
@@ -1220,7 +1229,8 @@ def hire_us():
     ]
 
     return render_template('hire_us.html', services=services)
-    
+
+
 # ==========================================
 # ADMIN: CLIENT REQUESTS PANEL
 # ==========================================
