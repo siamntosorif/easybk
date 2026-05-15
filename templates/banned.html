@@ -2,28 +2,23 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#030712">
-    <title>Pay-R | Access Denied</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <title>Account Suspended | Earn Daily</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome Pro Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Hind+Siliguri:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --dark-bg: #030712;
-            --danger-red: #f43f5e;
-        }
-
         body { 
             font-family: 'Hind Siliguri', 'Inter', sans-serif; 
-            background-color: var(--dark-bg);
+            background-color: #020617; /* Very dark slate */
             color: #E2E8F0;
             overflow: hidden;
             display: flex;
@@ -32,126 +27,131 @@
             min-h-screen;
         }
 
-        /* --- LOCKDOWN ANIMATION --- */
+        /* Entry Animation */
         .reveal-lockdown {
             animation: lockdownIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes lockdownIn {
-            from { opacity: 0; transform: scale(0.9) translateY(30px); }
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* --- PREMIUM CARD --- */
-        .ai-banned-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(244, 63, 94, 0.2);
+        /* Glassmorphism Card */
+        .banned-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(225, 29, 72, 0.2);
             border-radius: 32px;
-            box-shadow: 0 0 40px rgba(244, 63, 94, 0.1);
+            box-shadow: 0 0 50px rgba(225, 29, 72, 0.08);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* --- RED GLOW ICON --- */
-        .ban-icon-glow {
+        /* Pulsing Red Glow */
+        .red-glow-icon {
             position: relative;
             z-index: 10;
         }
-        .ban-icon-glow::before {
-            content: '';
-            position: absolute;
-            inset: -15px;
-            background: rgba(244, 63, 94, 0.2);
-            filter: blur(20px);
-            border-radius: 50%;
-            z-index: -1;
+        .red-glow-icon::before {
+            content: ''; position: absolute; inset: -15px;
+            background: rgba(225, 29, 72, 0.2);
+            filter: blur(20px); border-radius: 50%; z-index: -1;
             animation: pulse-red 2s infinite;
         }
         @keyframes pulse-red {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
+            0%, 100% { transform: scale(1); opacity: 0.4; }
             50% { transform: scale(1.3); opacity: 0.8; }
         }
 
-        /* --- REASON BOX --- */
-        .reason-node {
+        /* Scanner Line Effect */
+        .scan-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(225, 29, 72, 0.8), transparent);
+            opacity: 0.5; animation: scan 4s linear infinite;
+        }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        /* Reason Box */
+        .reason-box {
             background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
         }
 
-        .btn-support {
-            background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
-            box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+        /* Exit Button */
+        .btn-exit {
+            background: #ffffff;
+            color: #0F172A;
+            transition: all 0.3s ease;
         }
-        .btn-support:active { transform: scale(0.96); }
-
-        .scan-line {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, #f43f5e, transparent);
-            opacity: 0.3;
-            animation: scan 3s linear infinite;
-        }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
+        .btn-exit:hover { background: #F1F5F9; transform: translateY(-2px); }
+        .btn-exit:active { transform: scale(0.96); }
     </style>
 </head>
-<body class="p-5">
+<body class="p-4 sm:p-6">
 
-    <!-- background glows -->
-    <div class="fixed top-[-10%] right-[-10%] w-64 h-64 bg-rose-600/10 rounded-full blur-[100px]"></div>
-    <div class="fixed bottom-[-10%] left-[-10%] w-64 h-64 bg-red-900/10 rounded-full blur-[100px]"></div>
+    <!-- Ambient Background Orbs -->
+    <div class="fixed top-[-10%] right-[-10%] w-64 h-64 bg-red-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] left-[-10%] w-64 h-64 bg-rose-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-    <div class="ai-banned-card max-w-md w-full p-8 text-center relative overflow-hidden reveal-lockdown">
+    <div class="banned-card max-w-md w-full p-8 sm:p-10 text-center reveal-lockdown">
         
-        <!-- Scanline Effect -->
         <div class="scan-line"></div>
 
         <div class="relative z-10">
-            <!-- Alert Icon -->
-            <div class="ban-icon-glow h-24 w-24 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8 border border-rose-500/20 shadow-2xl">
-                <i class="fa-solid fa-shield-virus"></i>
+            
+            <!-- Warning Icon -->
+            <div class="red-glow-icon h-24 w-24 bg-red-500/10 text-red-500 rounded-[20px] flex items-center justify-center text-4xl mx-auto mb-6 border border-red-500/20 shadow-[0_0_30px_rgba(225,29,72,0.3)]">
+                <i class="fa-solid fa-user-lock"></i>
             </div>
             
-            <h1 class="text-2xl font-black text-rose-500 uppercase tracking-tighter mb-2 italic">ACCESS DENIED</h1>
-            <h2 class="text-lg font-bold text-white mb-4">একাউন্ট লক করা হয়েছে!</h2>
+            <span class="inline-block bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                Access Denied
+            </span>
+
+            <h1 class="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight leading-tight">একাউন্ট সাসপেন্ড করা হয়েছে</h1>
             
-            <p class="text-xs text-slate-400 leading-relaxed mb-8">
-                দুঃখিত <span class="text-rose-400 font-mono">{{ user.email }}</span>, সিস্টেমের নিরাপত্তা নীতি লঙ্ঘনের কারণে আপনার এক্সেস সাময়িকভাবে স্থগিত করা হয়েছে।
+            <p class="text-sm text-slate-400 font-medium leading-relaxed mb-8">
+                দুঃখিত <span class="text-white font-mono">{{ user.email }}</span>, সিস্টেমের নিরাপত্তা নীতি লঙ্ঘনের কারণে আপনার এক্সেস স্থায়ীভাবে বাতিল করা হয়েছে।
             </p>
 
-            <!-- Reason Box (System Log Style) -->
-            <div class="reason-node p-5 text-left mb-8">
-                <h3 class="text-[10px] font-black text-rose-500/70 uppercase tracking-[2px] mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Security Violation Logs:
+            <!-- Server Logs Box -->
+            <div class="reason-box p-5 text-left mb-8">
+                <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] mb-3 flex items-center gap-1.5 border-b border-slate-700/50 pb-2">
+                    <i class="fa-solid fa-server"></i> System Logs
                 </h3>
-                <ul class="text-[11px] text-slate-300 space-y-2.5 font-medium">
+                <ul class="text-xs text-slate-300 space-y-3 font-medium">
                     <li class="flex items-start gap-2">
-                        <span class="text-rose-500">»</span> 
-                        ভিপিএন (VPN) বা প্রক্সি ব্যবহার করা হয়েছে।
+                        <i class="fa-solid fa-xmark text-red-500 mt-0.5"></i> 
+                        <span>একই ডিভাইস থেকে একাধিক একাউন্ট ব্যবহার করা।</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <span class="text-rose-500">»</span> 
-                        একাধিক ডুপ্লিকেট একাউন্ট শনাক্ত করা হয়েছে।
+                        <i class="fa-solid fa-xmark text-red-500 mt-0.5"></i> 
+                        <span>ভিপিএন (VPN) বা প্রক্সি সার্ভার ব্যবহার করা।</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <span class="text-rose-500">»</span> 
-                        টাস্কে ভুল তথ্য বা স্ক্রিনশট প্রদান করা হয়েছে।
+                        <i class="fa-solid fa-xmark text-red-500 mt-0.5"></i> 
+                        <span>কাজে ভুয়া তথ্য (Fake Proof) বা ফেক ট্রানজেকশন দেওয়া।</span>
                     </li>
                 </ul>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="space-y-4">
-                <a href="https://wa.me/8801624175616" target="_blank" class="btn-support block w-full text-white py-4 rounded-2xl font-black text-sm uppercase tracking-[2px] transition-all flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-whatsapp text-xl"></i> লাইভ সাপোর্ট পান
-                </a>
-                
-                <a href="/logout" class="block w-full bg-white/5 border border-white/10 text-slate-400 py-4 rounded-2xl font-bold text-sm hover:bg-white/10 transition-all uppercase tracking-widest">
-                    সিস্টেম থেকে বের হোন
-                </a>
-            </div>
+            <!-- Single Exit Button -->
+            <a href="/logout" class="btn-exit block w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg">
+                <i class="fa-solid fa-power-off mr-1.5"></i> সিস্টেম থেকে বের হোন
+            </a>
 
-            <p class="mt-8 text-[9px] text-slate-500 font-mono uppercase tracking-tighter opacity-50">
-                Security ID: #{{ user.id if user else 'GLOBAL-BAN' }} • Firewall Protection Active
-            </p>
+            <!-- Footer ID -->
+            <div class="mt-8 pt-4 border-t border-slate-700/50 opacity-50">
+                <p class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">
+                    Reference ID: {{ user.referral_code if user else 'UNKNOWN' }}
+                </p>
+                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                    Firewall Protection Active
+                </p>
+            </div>
+            
         </div>
     </div>
 
