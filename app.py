@@ -1311,6 +1311,8 @@ def special_task():
 # ==========================================
 # ==========================================
 # ADMIN: LEADERSHIP APPLICATIONS & APPROVED LEADERS
+# ==========================================# ==========================================
+# 👑 ADMIN: LEADERSHIP APPLICATIONS & APPROVED LEADERS
 # ==========================================
 @app.route('/admin/leaders')
 @login_required
@@ -1320,25 +1322,32 @@ def admin_leaders():
         # 1. Fetch Pending Requests
         pending_reqs = supabase.table('leader_applications').select('*').eq('status', 'pending').order('created_at', desc=True).execute().data
         
-        # 2. Fetch Approved Leaders (from profiles table)
+        # 2. Fetch Approved Leaders from profiles table
+        # .eq('is_leader', True) দিয়ে ফিল্টার করা হচ্ছে
         approved_leaders = supabase.table('profiles').select('id, email, full_name, mobile_number, leader_balance, created_at').eq('is_leader', True).execute().data
         
-        # Calculate referrals for each approved leader
+        # 3. Add Telegram and Referral Count to each leader
+        final_leaders = []
         for leader in approved_leaders:
-            # Count total referrals
-            refs_res = supabase.table('profiles').select('id', count='exact', head=True).eq('referred_by', leader['id']).execute()
-            leader['total_refs'] = refs_res.count if refs_res else 0
-            
             # Get Telegram username from their approved application
-            app_data = supabase.table('leader_applications').select('telegram').eq('user_id', leader['id']).eq('status', 'approved').order('created_at', desc=True).limit(1).execute().data
+            app_data = supabase.table('leader_applications').select('telegram').eq('user_id', leader['id']).order('created_at', desc=True).execute().data
             leader['telegram'] = app_data[0]['telegram'] if app_data else 'N/A'
+            
+            # Count total referrals directly from profiles table
+            try:
+                refs_data = supabase.table('profiles').select('id').eq('referred_by', leader['id']).execute().data
+                leader['total_refs'] = len(refs_data) if refs_data else 0
+            except:
+                leader['total_refs'] = 0
+                
+            final_leaders.append(leader)
 
     except Exception as e:
         print(f"Fetch Leaders Error: {e}")
         pending_reqs = []
-        approved_leaders = []
+        final_leaders = []
 
-    return render_template('admin_leaders.html', requests=pending_reqs, approved_leaders=approved_leaders)
+    return render_template('admin_leaders.html', requests=pending_reqs, approved_leaders=final_leaders)
 
 @app.route('/admin/leaders/action/<action>/<int:req_id>')
 @login_required
@@ -1353,7 +1362,9 @@ def leader_action(action, req_id):
         user_id = req_data['user_id']
 
         if action == 'approve':
+            # 1. Make user a leader
             supabase.table('profiles').update({'is_leader': True}).eq('id', user_id).execute()
+            # 2. Update application status
             supabase.table('leader_applications').update({'status': 'approved'}).eq('id', req_id).execute()
             flash(f"✅ {req_data['name']} কে সফলভাবে লিডার হিসেবে অ্যাপ্রুভ করা হয়েছে!", "success")
 
@@ -1366,6 +1377,7 @@ def leader_action(action, req_id):
         flash("❌ সিস্টেম এরর! আবার চেষ্টা করুন।", "error")
 
     return redirect(url_for('admin_leaders'))
+    
 
 # --- ADMIN: VIP ACTION (APPROVE / REJECT) ---
 @app.route('/admin/vip/action/<action>/<int:req_id>')
