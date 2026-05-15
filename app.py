@@ -1309,13 +1309,36 @@ def special_task():
 # ==========================================
 # ADMIN: LEADERSHIP APPLICATIONS
 # ==========================================
+# ==========================================
+# ADMIN: LEADERSHIP APPLICATIONS & APPROVED LEADERS
+# ==========================================
 @app.route('/admin/leaders')
 @login_required
 @admin_required
 def admin_leaders():
-    # Fetch all pending leadership applications
-    reqs = supabase.table('leader_applications').select('*').eq('status', 'pending').order('created_at', desc=True).execute().data
-    return render_template('admin_leaders.html', requests=reqs)
+    try:
+        # 1. Fetch Pending Requests
+        pending_reqs = supabase.table('leader_applications').select('*').eq('status', 'pending').order('created_at', desc=True).execute().data
+        
+        # 2. Fetch Approved Leaders (from profiles table)
+        approved_leaders = supabase.table('profiles').select('id, email, full_name, mobile_number, leader_balance, created_at').eq('is_leader', True).execute().data
+        
+        # Calculate referrals for each approved leader
+        for leader in approved_leaders:
+            # Count total referrals
+            refs_res = supabase.table('profiles').select('id', count='exact', head=True).eq('referred_by', leader['id']).execute()
+            leader['total_refs'] = refs_res.count if refs_res else 0
+            
+            # Get Telegram username from their approved application
+            app_data = supabase.table('leader_applications').select('telegram').eq('user_id', leader['id']).eq('status', 'approved').order('created_at', desc=True).limit(1).execute().data
+            leader['telegram'] = app_data[0]['telegram'] if app_data else 'N/A'
+
+    except Exception as e:
+        print(f"Fetch Leaders Error: {e}")
+        pending_reqs = []
+        approved_leaders = []
+
+    return render_template('admin_leaders.html', requests=pending_reqs, approved_leaders=approved_leaders)
 
 @app.route('/admin/leaders/action/<action>/<int:req_id>')
 @login_required
@@ -1323,7 +1346,6 @@ def admin_leaders():
 def leader_action(action, req_id):
     try:
         req_data = supabase.table('leader_applications').select('*').eq('id', req_id).single().execute().data
-        
         if not req_data:
             flash("❌ অ্যাপ্লিকেশন পাওয়া যায়নি!", "error")
             return redirect(url_for('admin_leaders'))
@@ -1331,17 +1353,11 @@ def leader_action(action, req_id):
         user_id = req_data['user_id']
 
         if action == 'approve':
-            # 1. Update user profile to make them a leader
             supabase.table('profiles').update({'is_leader': True}).eq('id', user_id).execute()
-            
-            # 2. Mark application as approved
             supabase.table('leader_applications').update({'status': 'approved'}).eq('id', req_id).execute()
-            
-            # 3. Send Telegram Alert to Admin (Optional logging)
             flash(f"✅ {req_data['name']} কে সফলভাবে লিডার হিসেবে অ্যাপ্রুভ করা হয়েছে!", "success")
 
         elif action == 'reject':
-            # Mark application as rejected
             supabase.table('leader_applications').update({'status': 'rejected'}).eq('id', req_id).execute()
             flash("❌ অ্যাপ্লিকেশনটি রিজেক্ট করা হয়েছে।", "error")
 
@@ -1350,7 +1366,7 @@ def leader_action(action, req_id):
         flash("❌ সিস্টেম এরর! আবার চেষ্টা করুন।", "error")
 
     return redirect(url_for('admin_leaders'))
-    
+
 # --- ADMIN: VIP ACTION (APPROVE / REJECT) ---
 @app.route('/admin/vip/action/<action>/<int:req_id>')
 @login_required
