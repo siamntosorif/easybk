@@ -1326,57 +1326,53 @@ def leader_action(action, req_id):
 def vip_action(action, req_id):
     from datetime import datetime, timedelta
     try:
-        # ১. রিকোয়েস্ট ডাটাবেস থেকে আনা
         req_res = supabase.table('vip_requests').select('*').eq('id', req_id).single().execute()
         req = req_res.data
         
-        if not req: 
-            flash("রিকোয়েস্ট পাওয়া যায়নি!", "error")
-            return redirect(url_for('admin_vip'))
-
         if action == 'approve':
             plan = VIP_PLANS.get(req['level_id'])
-            
-            # ২. মেয়াদ (Expiry Date) তৈরি করা
             expiry_date = (datetime.utcnow() + timedelta(days=plan['days'])).isoformat()
             
-            # ৩. ইউজারের প্রোফাইলে লেভেল ব্যাজ আপডেট
-            supabase.table('profiles').update({
-                'current_level': req['level_id']
-            }).eq('id', req['user_id']).execute()
+            # ইউজারের প্রোফাইল আপডেট
+            supabase.table('profiles').update({'current_level': req['level_id']}).eq('id', req['user_id']).execute()
             
-            # ৪. ইউজারের জন্য নতুন প্যাকেজ চালু করা (user_vips টেবিলে)
+            # ইউজারের VIP চালু করা
             supabase.table('user_vips').insert({
-                'user_id': req['user_id'],
-                'level_id': req['level_id'],
-                'profit': plan['daily_profit'],
-                'expires_at': expiry_date,
-                'status': 'active'
+                'user_id': req['user_id'], 'level_id': req['level_id'],
+                'profit': plan['daily_profit'], 'expires_at': expiry_date, 'status': 'active'
             }).execute()
             
-            # ৫. রেফারেল কমিশন দেওয়া (৫%)
+            # ==========================================
+            # 👑 SMART COMMISSION LOGIC (LEADER VS NORMAL)
+            # ==========================================
             user_info = supabase.table('profiles').select('referred_by').eq('id', req['user_id']).single().execute().data
             referrer_id = user_info.get('referred_by')
             
             if referrer_id:
-                commission = (float(plan['price']) * 5) / 100
-                ref_user = supabase.table('profiles').select('balance').eq('id', referrer_id).single().execute().data
+                # রেফারারের তথ্য আনা (সে কি সাধারণ ইউজার নাকি লিডার?)
+                ref_user = supabase.table('profiles').select('balance, leader_balance, is_leader').eq('id', referrer_id).single().execute().data
+                
                 if ref_user:
-                    new_ref_bal = float(ref_user['balance']) + commission
-                    supabase.table('profiles').update({'balance': new_ref_bal}).eq('id', referrer_id).execute()
+                    if ref_user.get('is_leader'):
+                        # লিডার হলে: VIP দামের ৫০% পাবে (leader_balance এ যোগ হবে)
+                        commission = (float(plan['price']) * 50) / 100
+                        new_leader_bal = float(ref_user.get('leader_balance', 0)) + commission
+                        supabase.table('profiles').update({'leader_balance': new_leader_bal}).eq('id', referrer_id).execute()
+                    else:
+                        # সাধারণ ইউজার হলে: VIP দামের ৫% পাবে (main balance এ যোগ হবে)
+                        commission = (float(plan['price']) * 5) / 100
+                        new_main_bal = float(ref_user.get('balance', 0)) + commission
+                        supabase.table('profiles').update({'balance': new_main_bal}).eq('id', referrer_id).execute()
             
-            # ৬. রিকোয়েস্ট স্ট্যাটাস 'Approved' করা
             supabase.table('vip_requests').update({'status': 'approved'}).eq('id', req_id).execute()
-            flash("✅ VIP প্যাকেজ সফলভাবে চালু করা হয়েছে এবং কমিশন দেওয়া হয়েছে!", "success")
+            flash("✅ VIP প্যাকেজ চালু করা হয়েছে এবং অটোমেটিক কমিশন দেওয়া হয়েছে!", "success")
             
         elif action == 'reject':
-            # রিজেক্ট করলে শুধু স্ট্যাটাস পরিবর্তন হবে
             supabase.table('vip_requests').update({'status': 'rejected'}).eq('id', req_id).execute()
             flash("❌ রিকোয়েস্টটি বাতিল করা হয়েছে।", "warning")
             
     except Exception as e:
-        print(f"VIP Action Error: {e}")
-        flash(f"System Error: {str(e)}", "error")
+        flash(f"Error: {e}", "error")
 
     return redirect(url_for('admin_vip'))
 
