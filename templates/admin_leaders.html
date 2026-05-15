@@ -4,100 +4,231 @@
 <style>
     .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(15px); }
     @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* Tab Switch Animation */
+    .tab-pane { display: none; opacity: 0; }
+    .tab-pane.active { display: block; animation: tabFadeIn 0.4s ease forwards; }
+    @keyframes tabFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Active Tab Button Style */
+    .tab-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tab-btn.active {
+        background-color: #ffffff;
+        color: #4F46E5; /* Indigo 600 */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
 </style>
 
 <div class="max-w-5xl mx-auto space-y-6 pt-4 pb-20 fade-in-up px-1">
     
-    <!-- 1. Header -->
+    <!-- 1. HEADER -->
     <div class="bg-gradient-to-r from-slate-900 to-[#1E293B] p-6 sm:p-8 rounded-[24px] text-white shadow-xl relative overflow-hidden">
         <div class="absolute right-0 top-0 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-        <div class="relative z-10 flex items-center justify-between">
+        <div class="relative z-10 flex items-center gap-4">
+            <div class="h-14 w-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-white/20">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
             <div>
-                <h2 class="text-2xl sm:text-3xl font-black mb-1 tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-user-tie text-indigo-400"></i> Leader Applications
-                </h2>
-                <p class="text-xs text-slate-400 font-medium">Review and approve new Brand Ambassadors</p>
-            </div>
-            <div class="bg-white/10 px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm text-center">
-                <p class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">Pending</p>
-                <p class="text-2xl font-black font-mono leading-none">{{ requests|length }}</p>
+                <h1 class="text-2xl font-bold tracking-tight">Leader Network</h1>
+                <p class="text-indigo-200 text-xs mt-1">Review applications & monitor active leaders</p>
             </div>
         </div>
     </div>
 
-    <!-- 2. Application Cards -->
-    <div class="grid lg:grid-cols-2 gap-5">
-        {% for req in requests %}
-        <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 sm:p-6 relative overflow-hidden group hover:border-indigo-200 hover:shadow-[0_10px_30px_rgba(79,70,229,0.05)] transition-all flex flex-col h-full">
-            
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-[14px] flex items-center justify-center font-black text-xl shadow-sm border border-indigo-100">
-                        {{ req.name[0] | upper }}
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-lg leading-tight">{{ req.name }}</h4>
-                        <p class="text-[10px] text-slate-400 font-mono mt-0.5"><i class="fa-regular fa-envelope"></i> {{ req.email }}</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="text-[9px] bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-widest inline-block mb-1">Pending</span>
-                    <p class="text-[9px] text-slate-400 font-mono">{{ req.created_at[:10] }}</p>
-                </div>
-            </div>
-
-            <!-- Details Grid -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Phone</p>
-                    <p class="text-sm font-bold text-slate-700 font-mono">{{ req.phone }}</p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Telegram</p>
-                    <p class="text-sm font-bold text-slate-700 font-mono">{{ req.telegram }}</p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Age & Edu</p>
-                    <p class="text-xs font-bold text-slate-700">{{ req.age }} Yrs, {{ req.education }}</p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Facebook</p>
-                    <a href="{{ req.fb_link }}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"><i class="fa-solid fa-up-right-from-square"></i> View Profile</a>
-                </div>
-            </div>
-
-            <!-- Marketing Plan -->
-            <div class="bg-indigo-50/50 p-4 rounded-[16px] border border-indigo-100 mb-5 flex-grow">
-                <p class="text-[9px] text-indigo-500 uppercase font-bold tracking-widest mb-2"><i class="fa-solid fa-bullseye"></i> Marketing Plan</p>
-                <p class="text-xs text-slate-700 font-medium leading-relaxed">
-                    {{ req.marketing_exp }}
-                </p>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex gap-3 border-t border-slate-100 pt-4 mt-auto">
-                <a href="/admin/leaders/action/reject/{{ req.id }}" onclick="return confirm('অ্যাপ্লিকেশনটি রিজেক্ট করবেন?')" class="flex-1 bg-white border border-red-200 text-red-600 py-3 rounded-[14px] text-xs font-bold text-center hover:bg-red-50 hover:border-red-300 transition shadow-sm active:scale-95">
-                    <i class="fa-solid fa-xmark"></i> Reject
-                </a>
-                
-                <a href="/admin/leaders/action/approve/{{ req.id }}" onclick="return confirm('এই ইউজারকে লিডার হিসেবে অ্যাপ্রুভ করবেন?')" class="flex-1 bg-indigo-600 text-white py-3 rounded-[14px] text-xs font-black uppercase tracking-widest text-center shadow-[0_4px_15px_rgba(79,70,229,0.2)] hover:bg-indigo-700 transition active:scale-95">
-                    <i class="fa-solid fa-check-double"></i> Approve Leader
-                </a>
-            </div>
-
-        </div>
-        {% else %}
-        <!-- Empty State -->
-        <div class="col-span-full text-center py-24 bg-white rounded-[32px] border border-dashed border-slate-300 shadow-sm">
-            <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-slate-300 border border-slate-100">
-                <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 tracking-tight">No Applications</h3>
-            <p class="text-xs text-slate-500 mt-1 font-medium">নতুন লিডারশিপ অ্যাপ্লিকেশনের জন্য অপেক্ষা করুন।</p>
-        </div>
-        {% endfor %}
+    <!-- 2. TAB CONTROLLER -->
+    <div class="bg-slate-100 p-1.5 rounded-[16px] flex items-center gap-1 relative shadow-inner border border-slate-200">
+        <button onclick="switchTab('pending')" id="btn-pending" class="tab-btn active flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-[12px] text-slate-500 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-hourglass-half"></i> Pending Reqs ({{ requests|length }})
+        </button>
+        <button onclick="switchTab('approved')" id="btn-approved" class="tab-btn flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-[12px] text-slate-500 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-crown text-amber-500"></i> Active Leaders ({{ approved_leaders|length }})
+        </button>
     </div>
 
+    <!-- 3. TAB PANES -->
+    <div class="relative min-h-[400px]">
+
+        <!-- ================= PENDING REQUESTS PANE ================= -->
+        <div id="pane-pending" class="tab-pane active space-y-4">
+            <div class="grid lg:grid-cols-2 gap-5">
+                {% for req in requests %}
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 sm:p-6 relative overflow-hidden group hover:border-indigo-200 hover:shadow-md transition-all flex flex-col h-full">
+                    
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-[14px] flex items-center justify-center font-black text-xl shadow-sm border border-indigo-100">
+                                {{ req.name[0] | upper }}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg leading-tight">{{ req.name }}</h4>
+                                <p class="text-[10px] text-slate-400 font-mono mt-0.5"><i class="fa-regular fa-envelope"></i> {{ req.email }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-widest inline-block mb-1">Pending</span>
+                            <p class="text-[9px] text-slate-400 font-mono">{{ req.created_at[:10] }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Phone</p>
+                            <p class="text-sm font-bold text-slate-700 font-mono">{{ req.phone }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100 relative group/copy">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Telegram</p>
+                            <p class="text-sm font-bold text-sky-600 font-mono truncate" id="tg-{{ req.id }}">{{ req.telegram }}</p>
+                            <button onclick="copyData('tg-{{ req.id }}', this)" class="absolute top-2 right-2 h-7 w-7 bg-white rounded-lg border border-slate-200 text-slate-400 hover:text-sky-500 shadow-sm flex items-center justify-center transition active:scale-90">
+                                <i class="fa-regular fa-copy text-[10px]"></i>
+                            </button>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Age & Edu</p>
+                            <p class="text-xs font-bold text-slate-700">{{ req.age }} Yrs, {{ req.education }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1">Facebook</p>
+                            <a href="{{ req.fb_link }}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"><i class="fa-solid fa-up-right-from-square"></i> View Profile</a>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Plan -->
+                    <div class="bg-indigo-50/50 p-4 rounded-[16px] border border-indigo-100 mb-5 flex-grow">
+                        <p class="text-[9px] text-indigo-500 uppercase font-bold tracking-widest mb-2"><i class="fa-solid fa-bullseye"></i> Marketing Plan</p>
+                        <p class="text-xs text-slate-700 font-medium leading-relaxed">{{ req.marketing_exp }}</p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-3 border-t border-slate-100 pt-4 mt-auto">
+                        <a href="/admin/leaders/action/reject/{{ req.id }}" onclick="return confirm('অ্যাপ্লিকেশনটি রিজেক্ট করবেন?')" class="flex-1 bg-white border border-red-200 text-red-600 py-3 rounded-[14px] text-xs font-bold text-center hover:bg-red-50 hover:border-red-300 transition shadow-sm active:scale-95">
+                            <i class="fa-solid fa-xmark"></i> Reject
+                        </a>
+                        <a href="/admin/leaders/action/approve/{{ req.id }}" onclick="return confirm('এই ইউজারকে লিডার হিসেবে অ্যাপ্রুভ করবেন?')" class="flex-1 bg-indigo-600 text-white py-3 rounded-[14px] text-xs font-black uppercase tracking-widest text-center shadow-lg hover:bg-indigo-700 transition active:scale-95">
+                            <i class="fa-solid fa-check-double"></i> Approve
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-full text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-300 shadow-sm">
+                    <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl text-slate-300 border border-slate-100"><i class="fa-solid fa-user-shield"></i></div>
+                    <h3 class="text-base font-bold text-slate-800">No New Applications</h3>
+                    <p class="text-[10px] text-slate-400 mt-1 font-medium">নতুন লিডারশিপ অ্যাপ্লিকেশনের জন্য অপেক্ষা করুন।</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ================= APPROVED LEADERS PANE ================= -->
+        <div id="pane-approved" class="tab-pane space-y-4">
+            <div class="grid lg:grid-cols-2 gap-5">
+                {% for leader in approved_leaders %}
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 relative overflow-hidden group hover:border-amber-200 transition-colors">
+                    
+                    <div class="flex items-center gap-4 mb-5 border-b border-slate-50 pb-4">
+                        <div class="h-12 w-12 bg-amber-50 text-amber-500 rounded-[14px] flex items-center justify-center font-black text-xl shadow-sm border border-amber-100">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-slate-800 text-base leading-tight">{{ leader.full_name or leader.email.split('@')[0] }}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ leader.email }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-[9px] bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded font-bold uppercase tracking-widest inline-block mb-1">Active</span>
+                            <p class="text-[9px] text-slate-400 font-mono">Join: {{ leader.created_at[:10] }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-[14px] border border-slate-100">
+                            <p class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1"><i class="fa-solid fa-users text-blue-400"></i> Total Refs</p>
+                            <p class="text-xl font-black text-slate-800">{{ leader.total_refs }}</p>
+                        </div>
+                        <div class="bg-indigo-50/50 p-3 rounded-[14px] border border-indigo-100">
+                            <p class="text-[9px] text-indigo-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1"><i class="fa-solid fa-wallet text-indigo-500"></i> Leader Bal</p>
+                            <p class="text-xl font-black text-indigo-700 font-mono">৳{{ leader.leader_balance or 0 }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Contact Bar -->
+                    <div class="flex items-center gap-2 mt-auto border-t border-slate-100 pt-4">
+                        <div class="flex-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between group/copy">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <i class="fa-brands fa-telegram text-sky-500 text-lg"></i>
+                                <span class="text-xs font-bold text-slate-700 font-mono truncate" id="atg-{{ leader.id }}">{{ leader.telegram }}</span>
+                            </div>
+                            <button onclick="copyData('atg-{{ leader.id }}', this)" class="h-8 w-8 bg-white rounded-lg border border-slate-200 text-slate-400 hover:text-sky-500 shadow-sm flex items-center justify-center transition active:scale-90 flex-shrink-0">
+                                <i class="fa-regular fa-copy text-[10px]"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between group/copy">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <i class="fa-solid fa-phone text-emerald-500 text-lg"></i>
+                                <span class="text-xs font-bold text-slate-700 font-mono truncate" id="aph-{{ leader.id }}">{{ leader.mobile_number }}</span>
+                            </div>
+                            <button onclick="copyData('aph-{{ leader.id }}', this)" class="h-8 w-8 bg-white rounded-lg border border-slate-200 text-slate-400 hover:text-emerald-500 shadow-sm flex items-center justify-center transition active:scale-90 flex-shrink-0">
+                                <i class="fa-regular fa-copy text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {% else %}
+                <div class="col-span-full text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-300 shadow-sm">
+                    <div class="h-16 w-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl text-amber-300 border border-amber-100"><i class="fa-solid fa-crown"></i></div>
+                    <h3 class="text-sm font-bold text-slate-800">No Active Leaders</h3>
+                    <p class="text-[10px] text-slate-400 mt-1 font-medium">Pending লিস্ট থেকে ইউজারদের অ্যাপ্রুভ করুন।</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<!-- ==========================================
+     SCRIPTS (Tabs & Copy Logic)
+========================================== -->
+<script>
+    function switchTab(tabName) {
+        const btnPending = document.getElementById('btn-pending');
+        const btnApproved = document.getElementById('btn-approved');
+        const panePending = document.getElementById('pane-pending');
+        const paneApproved = document.getElementById('pane-approved');
+
+        btnPending.classList.remove('active', 'text-indigo-600');
+        btnApproved.classList.remove('active', 'text-indigo-600');
+        panePending.classList.remove('active');
+        paneApproved.classList.remove('active');
+
+        if(tabName === 'pending') {
+            btnPending.classList.add('active');
+            panePending.classList.add('active');
+        } else {
+            btnApproved.classList.add('active');
+            paneApproved.classList.add('active');
+        }
+    }
+
+    function copyData(elementId, btn) {
+        const textToCopy = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
+            btn.classList.add('bg-green-500', 'text-white', 'border-green-600');
+            btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-200');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.add('bg-white', 'text-slate-400', 'border-slate-200');
+                btn.classList.remove('bg-green-500', 'text-white', 'border-green-600');
+            }, 1500);
+        });
+    }
+</script>
 
 {% endblock %}
