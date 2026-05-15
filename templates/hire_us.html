@@ -137,18 +137,31 @@
     <!-- ==========================================
          4. HIRE US FORM (Call to Action)
     ========================================== -->
+   <!-- ==========================================
+         3. HIRE US FORM (Call to Action)
+    ========================================== -->
     <div id="hireForm" class="bg-white p-6 sm:p-10 rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 relative overflow-hidden mt-8">
         <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600"></div>
         
-        <div class="text-center mb-8">
+        <div class="text-center mb-6">
             <h2 class="text-2xl font-black text-slate-800 tracking-tight">Request a Proposal</h2>
-            <p class="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">We will contact you with the best price</p>
+            <p class="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">Fill the form, we will contact you</p>
+        </div>
+
+        <!-- ⚠️ Warning Notice for Client -->
+        <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl mb-8 flex items-start gap-3">
+            <div class="h-8 w-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            <p class="text-[11px] text-slate-600 font-medium leading-relaxed">
+                <b class="text-blue-700">লক্ষ্য করুন:</b> নিচের ফর্মটি পূরণ করার পর আমাদের <b>অ্যাডমিন বা সাপোর্ট টিম</b> খুব শীঘ্রই আপনার দেওয়া মাধ্যমে যোগাযোগ করে প্রজেক্টের বাজেট ও ডিটেইলস ফাইনাল করবে।
+            </p>
         </div>
 
         <form method="POST" action="/hire-us" class="space-y-6" onsubmit="showLoadingBtn()">
             
+            <!-- Row 1: Name & Contact Method -->
             <div class="grid sm:grid-cols-2 gap-5">
-                <!-- Name -->
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">আপনার নাম / ব্র্যান্ড নাম</label>
                     <div class="relative">
@@ -156,30 +169,46 @@
                         <input type="text" name="name" required placeholder="Full Name or Brand" class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800">
                     </div>
                 </div>
-                <!-- Contact Link/Number -->
+                
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Contact Link / Number</label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">যোগাযোগের মাধ্যম (Preferred Contact)</label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-link"></i></div>
-                        <input type="text" name="phone" required placeholder="WhatsApp No. / Telegram / FB Link" class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-brands fa-whatsapp"></i></div>
+                        <select name="contact_method" required class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800 appearance-none">
+                            <option value="WhatsApp">WhatsApp (হোয়াটসঅ্যাপ)</option>
+                            <option value="Telegram">Telegram (টেলিগ্রাম)</option>
+                            <option value="Direct Call">Direct Phone Call (সরাসরি কল)</option>
+                            <option value="Facebook">Facebook Inbox</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-5 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
-                    <p class="text-[9px] text-slate-400 mt-1.5 ml-1 font-medium">যেকোনো যোগাযোগ মাধ্যম বা প্রোফাইল লিংক দিন।</p>
                 </div>
             </div>
 
-            <!-- Service Selection -->
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">যে সার্ভিসটি প্রয়োজন</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-briefcase"></i></div>
-                    <select name="service" id="serviceSelect" required class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800 appearance-none">
-                        <option value="" disabled selected>-- সার্ভিস সিলেক্ট করুন --</option>
-                        {% for srv in services %}
-                            <option value="{{ srv.title }}">{{ srv.title }}</option>
-                        {% endfor %}
-                        <option value="Custom Task Requirement">Custom Request / অন্যান্য (Other)</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down absolute right-5 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            <!-- Row 2: ID/Number & Service -->
+            <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Contact ID / Number</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-link"></i></div>
+                        <input type="text" name="phone" required placeholder="Number or Profile Link" class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800">
+                    </div>
+                    <p class="text-[9px] text-slate-400 mt-1.5 ml-1 font-medium">উপরে সিলেক্ট করা মাধ্যমের নাম্বার বা লিংক দিন।</p>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">যে সার্ভিসটি প্রয়োজন</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-briefcase"></i></div>
+                        <select name="service" id="serviceSelect" required class="input-premium w-full pl-10 p-4 rounded-[16px] text-sm font-bold text-slate-800 appearance-none">
+                            <option value="" disabled selected>-- সার্ভিস সিলেক্ট করুন --</option>
+                            {% for srv in services %}
+                                <option value="{{ srv.title }}">{{ srv.title }}</option>
+                            {% endfor %}
+                            <option value="Custom Task Requirement">Custom Request / অন্যান্য (Other)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-5 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
                 </div>
             </div>
 
@@ -197,7 +226,8 @@
                 <i class="fa-solid fa-shield-halved text-blue-400 mr-1"></i> 100% Safe & Secure Process
             </p>
         </form>
-    </div>
+    </div>         
+        
 
 </div>
 
