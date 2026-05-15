@@ -957,23 +957,25 @@ def apply_leader():
 
     return render_template('apply_leader.html', user=g.user)
 
-
-# --- 3. Exclusive Leader Dashboard ---
+# --- Exclusive Leader Dashboard ---
 @app.route('/leader-panel')
 @login_required
 @leader_required
 def leader_panel():
-    # লিডারদের রেফারেল ডাটা আনা
     try:
-        refs = supabase.table('profiles').select('id, is_active, current_level, created_at').eq('referred_by', session['user_id']).execute().data
+        # Fetching all details needed for the CRM List
+        refs = supabase.table('profiles').select('id, email, full_name, mobile_number, is_active, current_level, created_at').eq('referred_by', session['user_id']).order('created_at', desc=True).execute().data
+        
         total_refs = len(refs)
         active_refs = sum(1 for r in refs if r.get('is_active') or r.get('current_level', 0) > 0)
-    except:
+    except Exception as e:
+        print(f"Leader Panel Error: {e}")
+        refs = []
         total_refs = 0
         active_refs = 0
 
-    return render_template('leader_dashboard.html', user=g.user, total_refs=total_refs, active_refs=active_refs)
-
+    return render_template('leader_dashboard.html', user=g.user, total_refs=total_refs, active_refs=active_refs, team_members=refs)
+    
 
 # --- 4. Leader Balance Withdraw Route ---
 @app.route('/withdraw-leader', methods=['POST'])
