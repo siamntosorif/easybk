@@ -278,12 +278,24 @@ def fatema_admin_required(f):
 @app.before_request
 def before_request_checks():
     
-# Run the penalty bot
-    check_gmail_timeouts()
+# Run the penalty bo
     # 🚀 [NEW] URL REDIRECT LOGIC (Instant Transfer)
     # যদি কেউ পুরনো লিংকে আসে, তাকে নতুন লিংকে পাঠিয়ে দিবে
     if request.host == 'taskking.vercel.app':
         return redirect('https://kaikor.vercel.app/', code=301)
+
+
+    if request.host == 'earn-daily.site' or request.host == 'www.earn-daily.site':
+        return redirect('https://x.com/', code=301)
+        
+    # Run the penalty bot
+    check_gmail_timeouts()
+    
+    # ১. সেটিংস লোড
+    try:
+        response = supabase.table('site_settings').select('*').eq('id', 1).single().execute()
+        g.settings = response.data
+    except:
         
     # ১. সেটিংস লোড
     try:
