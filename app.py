@@ -1,16 +1,3 @@
-import os
-import random
-import string
-import requests
-import base64
-from flask import jsonify, Response
-from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g, make_response
-from supabase import create_client, Client
-from dotenv import load_dotenv
-from datetime import timedelta
-from datetime import datetime, timedelta, timezone
-
 
 # Load environment variables
 load_dotenv()
